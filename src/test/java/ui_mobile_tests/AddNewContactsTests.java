@@ -114,7 +114,7 @@ public class AddNewContactsTests extends AppiumConfig {
     public void testAddContact_TooLongFields() {
         ContactLombok contact = TestDataFactoryContact.tooLongFields();
         new AddContactScreen(driver).fillContactForm(contact).clickCreateContact();
-        assertContactCreationError(ErrorMessages.INVALID_INPUT);
+        assertContactCreationError(ErrorMessages.INVALID_INPUT_TOLONG);
     }
 
     @Test(groups = "regression")

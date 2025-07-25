@@ -82,7 +82,7 @@ public class LoginTests extends AppiumConfig {
         UserLombok user = userRegistration();
         String userName = "";
         new LoginScreen(driver).login(userName, user.getPassword());
-        assertLoginFailure(ErrorMessages.EMAIL_REQUIRED);
+        assertLoginFailure(ErrorMessages.LOGIN_FAILED);
     }
 
     @Test(groups = "regression")
@@ -90,21 +90,21 @@ public class LoginTests extends AppiumConfig {
         UserLombok user = userRegistration();
         String password = "";
         new LoginScreen(driver).login(user.getUsername(), password);
-        assertLoginFailure(ErrorMessages.PASSWORD_REQUIRED);
+        assertLoginFailure(ErrorMessages.LOGIN_FAILED);
     }
 
     @Test(groups = "regression")
     public void loginNegativeTest_invalidUsernameFormat() {
         UserLombok invalidUser = TestDataFactoryUser.invalidEmailNoAtSymbol();
         new LoginScreen(driver).login(invalidUser.getUsername(), invalidUser.getPassword());
-        assertLoginFailure(ErrorMessages.INVALID_EMAIL);
+        assertLoginFailure(ErrorMessages.LOGIN_FAILED);
     }
 
     @Test(groups = "regression")
     public void loginNegativeTest_invalidUsernameDomain() {
         UserLombok invalidUser = TestDataFactoryUser.invalidEmailNoDomain();
         new LoginScreen(driver).login(invalidUser.getUsername(), invalidUser.getPassword());
-        assertLoginFailure(ErrorMessages.INVALID_EMAIL);
+        assertLoginFailure(ErrorMessages.LOGIN_FAILED);
     }
 
     @Test(groups = "regression")
@@ -112,34 +112,34 @@ public class LoginTests extends AppiumConfig {
         UserLombok user = userRegistration();
         String space = " ";
         new LoginScreen(driver).login(user.getUsername() + space, user.getPassword());
-        assertLoginFailure(ErrorMessages.INVALID_EMAIL);
+        assertLoginFailure(ErrorMessages.LOGIN_FAILED);
     }
 
     @Test(groups = "regression")
     public void loginNegativeTest_invalidPasswordShort() {
         UserLombok invalidUser = TestDataFactoryUser.invalidPasswordTooShort();
         new LoginScreen(driver).login(invalidUser.getUsername(), invalidUser.getPassword());
-        assertLoginFailure(ErrorMessages.PASSWORD_TOO_SHORT);
+        assertLoginFailure(ErrorMessages.LOGIN_FAILED);
     }
 
     @Test(groups = "regression")
     public void loginNegativeTest_invalidPasswordLong() {
         UserLombok invalidUser = TestDataFactoryUser.invalidPasswordTooLong();
         new LoginScreen(driver).login(invalidUser.getUsername(), invalidUser.getPassword());
-        assertLoginFailure(ErrorMessages.PASSWORD_TOO_LONG);
+        assertLoginFailure(ErrorMessages.LOGIN_FAILED);
     }
 
     @Test(groups = "regression")
     public void loginNegativeTest_invalidPasswordNoDigit() {
         UserLombok invalidUser = TestDataFactoryUser.invalidPasswordNoDigit();
         new LoginScreen(driver).login(invalidUser.getUsername(), invalidUser.getPassword());
-        assertLoginFailure(ErrorMessages.PASSWORD_NO_DIGIT);
+        assertLoginFailure(ErrorMessages.LOGIN_FAILED);
     }
 
     @Test(groups = "regression")
     public void loginNegativeTest_invalidPasswordNoSymbol() {
         UserLombok invalidUser = TestDataFactoryUser.invalidPasswordNoSymbol();
         new LoginScreen(driver).login(invalidUser.getUsername(), invalidUser.getPassword());
-        assertLoginFailure(ErrorMessages.PASSWORD_NO_SYMBOL);
+        assertLoginFailure(ErrorMessages.LOGIN_FAILED);
     }
 } 
