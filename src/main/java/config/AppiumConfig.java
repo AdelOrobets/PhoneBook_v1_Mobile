@@ -4,6 +4,7 @@ import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.remote.MobileCapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 
 import java.net.MalformedURLException;
@@ -21,12 +22,20 @@ public abstract class AppiumConfig {
         desiredCapabilities.setCapability("platformVersion", "10.0");
         desiredCapabilities.setCapability("appPackage", "com.sheygam.contactapp");
         desiredCapabilities.setCapability("appActivity", ".SplashActivity");
-        desiredCapabilities.setCapability(MobileCapabilityType.AUTOMATION_NAME, "Appium");
+        desiredCapabilities.setCapability(MobileCapabilityType.AUTOMATION_NAME, "UiAutomator2");
+        String url = "http://localhost:4723";
 
         try {
-            driver = new AndroidDriver(new URL("http://localhost:4723/wd/hub"), desiredCapabilities);
+            driver = new AndroidDriver(new URL(url), desiredCapabilities);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    @AfterMethod
+    public void tearDown() {
+        if (driver != null) {
+            driver.quit();
         }
     }
 }

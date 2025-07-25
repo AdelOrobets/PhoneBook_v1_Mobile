@@ -1,1 +1,0 @@
-{"uuid":"9d0e8b74-e9dd-4ed9-895d-9170e9fe87e0","name":"config.AppiumConfig.tearDown","children":["de538c91-c638-47d5-8e65-6503b49afaf3"],"description":"","befores":[],"afters":[{"name":"tearDown","status":"passed","stage":"finished","description":"","steps":[],"attachments":[],"parameters":[],"start":1753439903593,"stop":1753439903594}],"start":1753439903592,"stop":1753439903594}
