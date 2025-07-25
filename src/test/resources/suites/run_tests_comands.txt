@@ -1,0 +1,8 @@
+./gradlew smoke_android
+./gradlew regression_android
+
+./gradlew smoke_android \
+  -DdeviceName=Pixel_6 \
+  -DplatformVersion=13.0 \
+  -Dudid=emulator-5556
+
