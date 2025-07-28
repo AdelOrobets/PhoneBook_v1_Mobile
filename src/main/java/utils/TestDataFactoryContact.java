@@ -54,12 +54,16 @@ public class TestDataFactoryContact {
         return baseContact().email("").build();
     }
 
-    public static ContactLombok invalidEmailFormat() {
+    public static ContactLombok invalidEmailFormatNoDomain() {
         return baseContact().email("invalidEmailFormat@").build();
     }
 
     public static ContactLombok invalidPhoneFormat() {
         return baseContact().phone("123abc4561").build();
+    }
+
+    public static ContactLombok invalidPhoneFormatTooShort() {
+        return baseContact().phone("05123456").build();
     }
 
     public static ContactLombok tooLongFields() {

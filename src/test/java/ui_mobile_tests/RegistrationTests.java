@@ -48,7 +48,7 @@ public class RegistrationTests extends AppiumConfig {
     public void testSuccessfulRegistration() {
         UserLombok user = TestDataFactoryUser.validUser();
         registerUser(user);
-        Assert.assertTrue(new ContactListScreen(driver).isContactListDisplayed(),
+        Assert.assertTrue(new ContactListScreen(driver).isContactListScreenDisplayed(),
                 "Registration failed: Contact list screen not shown");
     }
 
@@ -59,7 +59,7 @@ public class RegistrationTests extends AppiumConfig {
         // First registration
         registerUser(user);
         contactListScreen = new ContactListScreen(driver);
-        if (contactListScreen.isContactListDisplayed()) {
+        if (contactListScreen.isContactListScreenDisplayed()) {
             contactListScreen.logout();
         }
         // Second registration

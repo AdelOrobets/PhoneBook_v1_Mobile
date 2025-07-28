@@ -24,7 +24,6 @@ public class LoginTests extends AppiumConfig {
         new SplashScreen(driver).goToAuthenticationScreen();
     }
 
-    // Helper
     private UserLombok registerAndLogout(UserLombok user) {
         new AuthenticationScreen(driver).registerUser(user);
         new ContactListScreen(driver).logout();
@@ -35,12 +34,24 @@ public class LoginTests extends AppiumConfig {
         new AuthenticationScreen(driver).login(email, password);
     }
 
+    private void verifyErrorMessage(String expectedMsg) {
+        ErrorScreen errorScreen = new ErrorScreen(driver);
+        String actualMsg = errorScreen.getErrorMessage();
+        logger.info("Actual error message: '{}'", actualMsg);
+        logger.info("Expected to contain: '{}'", expectedMsg);
+
+        Assert.assertTrue(actualMsg.contains(expectedMsg),
+                "Expected error message to contain: " + expectedMsg +
+                        ", but got: '" + actualMsg + "'");
+        errorScreen.closeErrorMsg();
+    }
+
     // Positive tests
     @Test(retryAnalyzer = utils.RetryAnalyzer.class, groups = {"smoke", "regression"})
     public void testLogin_afterSuccessfulRegistration() {
         UserLombok user = registerAndLogout(TestDataFactoryUser.validUser());
         login(user.getUsername(), user.getPassword());
-        Assert.assertTrue(new ContactListScreen(driver).isContactListDisplayed(),
+        Assert.assertTrue(new ContactListScreen(driver).isContactListScreenDisplayed(),
                 "Login failed");
     }
 
@@ -54,7 +65,7 @@ public class LoginTests extends AppiumConfig {
         String upperEmail = user.getUsername().toUpperCase();
         registerAndLogout(new UserLombok(upperEmail, user.getPassword()));
         login(upperEmail, user.getPassword());
-        Assert.assertTrue(new ContactListScreen(driver).isContactListDisplayed(),
+        Assert.assertTrue(new ContactListScreen(driver).isContactListScreenDisplayed(),
                 "Login failed");
     }
 
@@ -65,21 +76,8 @@ public class LoginTests extends AppiumConfig {
         registerAndLogout(new UserLombok(upperEmail, user.getPassword()));
         String lowerEmail = upperEmail.toLowerCase();
         login(lowerEmail, user.getPassword());
-        Assert.assertTrue(new ContactListScreen(driver).isContactListDisplayed(),
+        Assert.assertTrue(new ContactListScreen(driver).isContactListScreenDisplayed(),
                 "Login failed");
-    }
-
-    // Helper
-    private void verifyErrorMessage(String expectedMsg) {
-        ErrorScreen errorScreen = new ErrorScreen(driver);
-        String actualMsg = errorScreen.getErrorMessage();
-        logger.info("Actual error message: '{}'", actualMsg);
-        logger.info("Expected to contain: '{}'", expectedMsg);
-
-        Assert.assertTrue(actualMsg.contains(expectedMsg),
-                "Expected error message to contain: " + expectedMsg +
-                        ", but got: '" + actualMsg + "'");
-        errorScreen.closeErrorMsg();
     }
 
     // Negative tests

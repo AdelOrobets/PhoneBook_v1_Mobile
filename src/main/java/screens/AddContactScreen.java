@@ -4,6 +4,10 @@ import dto.ContactLombok;
 import io.appium.java_client.AppiumDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.time.Duration;
 
 public class AddContactScreen extends BaseScreen {
 
@@ -33,6 +37,8 @@ public class AddContactScreen extends BaseScreen {
     WebElement btnCreate;
 
     public AddContactScreen fillContactForm(ContactLombok contact) {
+        new WebDriverWait(driver, Duration.ofSeconds(30))
+                .until(ExpectedConditions.visibilityOf(inputName));
         inputName.sendKeys(contact.getName());
         inputLastName.sendKeys(contact.getLastName());
         inputEmail.sendKeys(contact.getEmail());
@@ -43,6 +49,8 @@ public class AddContactScreen extends BaseScreen {
     }
 
     public void clickCreateContact() {
+        new WebDriverWait(driver, Duration.ofSeconds(30))
+                .until(ExpectedConditions.elementToBeClickable(btnCreate));
         btnCreate.click();
     }
 }

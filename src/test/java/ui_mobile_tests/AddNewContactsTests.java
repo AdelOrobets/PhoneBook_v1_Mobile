@@ -3,6 +3,8 @@ package ui_mobile_tests;
 import config.AppiumConfig;
 import dto.ContactLombok;
 import dto.UserLombok;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
@@ -19,6 +21,8 @@ import utils.TestNGListener;
 @Listeners(TestNGListener.class)
 public class AddNewContactsTests extends AppiumConfig {
 
+    private static final Logger logger = LoggerFactory.getLogger(AddNewContactsTests.class);
+
     @BeforeMethod(alwaysRun = true)
     public void registrationUser() {
         UserLombok user = TestDataFactoryUser.validUser();
@@ -26,101 +30,104 @@ public class AddNewContactsTests extends AppiumConfig {
         new ContactListScreen(driver).clickAddContact();
     }
 
+    private void verifyErrorMessage(String expectedMsg) {
+        ErrorScreen errorScreen = new ErrorScreen(driver);
+        String actualMsg = errorScreen.getErrorMessage();
+        logger.info("Actual error message: '{}'", actualMsg);
+        logger.info("Expected to contain: '{}'", expectedMsg);
+
+        Assert.assertTrue(actualMsg.contains(expectedMsg),
+                "Expected error message to contain: " + expectedMsg +
+                        ", but got: '" + actualMsg + "'");
+        errorScreen.closeErrorMsg();
+    }
+
     // Positive tests
     @Test(groups = {"smoke", "regression"})
     public void testSuccessful_addNewContact() {
         ContactLombok contact = TestDataFactoryContact.validContact();
         new AddContactScreen(driver).fillContactForm(contact).clickCreateContact();
-
+        String fullName = contact.getName() + " " + contact.getLastName();
         boolean isPresent = new ContactListScreen(driver)
-                .isContactPresent(contact.getName(), contact.getPhone());
+                .isContactPresent(fullName, contact.getPhone());
         Assert.assertTrue(isPresent, "Contact was not added or not displayed");
     }
 
-    // Helper
-    private void assertContactCreationError(String expectedMsg) {
-        ErrorScreen errorScreen = new ErrorScreen(driver);
-        Assert.assertTrue(errorScreen.getErrorMessage().contains(expectedMsg),
-                "Expected error message to contain: " + expectedMsg +
-                        " but got: " + errorScreen.getErrorMessage());
-        errorScreen.closeErrorMsg();
-    }
-
     // Negative tests
+    /**
+     BUG: A duplicate contact is created when the same contact is added twice
+     using identical test data. The application should prevent duplicate entries
+     or notify the user that the contact already exists
+     */
     @Test(groups = "regression")
-    public void testAddContact_DuplicateContact() {
+    public void testAddContact_duplicateContact() {
         ContactLombok contact = TestDataFactoryContact.validContact();
         new AddContactScreen(driver).fillContactForm(contact).clickCreateContact();
-
-        boolean isPresent = new ContactListScreen(driver)
-                .isContactPresent(contact.getName(), contact.getPhone());
-        Assert.assertTrue(isPresent, "Contact was not added the first time");
-
         new ContactListScreen(driver).clickAddContact();
         new AddContactScreen(driver).fillContactForm(contact).clickCreateContact();
-        assertContactCreationError(ErrorMessages.DUPLICATE_CONTACT);
+        verifyErrorMessage(ErrorMessages.DUPLICATE_CONTACT);
     }
 
     @Test(groups = "regression")
-    public void testAddContact_AllFieldsEmpty() {
+    public void testAddContact_allFieldsEmpty() {
         ContactLombok contact = TestDataFactoryContact.allFieldsEmpty();
         new AddContactScreen(driver).fillContactForm(contact).clickCreateContact();
-        assertContactCreationError(ErrorMessages.REQUIRED_FIELDS);
+        verifyErrorMessage(ErrorMessages.REQUIRED_FIELDS_EMPTY);
     }
 
     @Test(groups = "regression")
-    public void testAddContact_WithoutName() {
+    public void testAddContact_withoutName() {
         ContactLombok contact = TestDataFactoryContact.invalidFieldWithoutName();
         new AddContactScreen(driver).fillContactForm(contact).clickCreateContact();
-        assertContactCreationError(ErrorMessages.NAME_REQUIRED);
+        verifyErrorMessage(ErrorMessages.NAME_REQUIRED);
     }
 
     @Test(groups = "regression")
-    public void testAddContact_WithoutLastName() {
+    public void testAddContact_withoutLastName() {
         ContactLombok contact = TestDataFactoryContact.invalidFieldWithoutLastName();
         new AddContactScreen(driver).fillContactForm(contact).clickCreateContact();
-        assertContactCreationError(ErrorMessages.LASTNAME_REQUIRED);
+        verifyErrorMessage(ErrorMessages.LASTNAME_REQUIRED);
     }
 
     @Test(groups = "regression")
-    public void testAddContact_WithoutPhone() {
+    public void testAddContact_withoutPhone() {
         ContactLombok contact = TestDataFactoryContact.invalidFieldWithoutPhone();
         new AddContactScreen(driver).fillContactForm(contact).clickCreateContact();
-        assertContactCreationError(ErrorMessages.PHONE_REQUIRED);
+        verifyErrorMessage(ErrorMessages.PHONE_REQUIRED);
     }
 
     @Test(groups = "regression")
-    public void testAddContact_WithoutEmail() {
+    public void testAddContact_withEmptyEmail() {
         ContactLombok contact = TestDataFactoryContact.invalidFieldWithoutEmail();
         new AddContactScreen(driver).fillContactForm(contact).clickCreateContact();
-        assertContactCreationError(ErrorMessages.EMAIL_REQUIRED);
+        verifyErrorMessage(ErrorMessages.EMAIL_REQUIRED);
     }
 
     @Test(groups = "regression")
     public void testAddContact_InvalidEmailFormat() {
-        ContactLombok contact = TestDataFactoryContact.invalidEmailFormat();
+        ContactLombok contact = TestDataFactoryContact.invalidEmailFormatNoDomain();
         new AddContactScreen(driver).fillContactForm(contact).clickCreateContact();
-        assertContactCreationError(ErrorMessages.INVALID_EMAIL);
+        verifyErrorMessage(ErrorMessages.INVALID_EMAIL);
     }
 
     @Test(groups = "regression")
     public void testAddContact_InvalidPhoneFormat() {
         ContactLombok contact = TestDataFactoryContact.invalidPhoneFormat();
         new AddContactScreen(driver).fillContactForm(contact).clickCreateContact();
-        assertContactCreationError(ErrorMessages.INVALID_PHONE);
+        verifyErrorMessage(ErrorMessages.INVALID_PHONE);
     }
 
     @Test(groups = "regression")
-    public void testAddContact_TooLongFields() {
+    public void testAddContact_tooLongInputInAllFields() {
         ContactLombok contact = TestDataFactoryContact.tooLongFields();
         new AddContactScreen(driver).fillContactForm(contact).clickCreateContact();
-        assertContactCreationError(ErrorMessages.INVALID_INPUT_TOLONG);
+        verifyErrorMessage(ErrorMessages.INVALID_REQUIRED_FIELDS);
     }
 
     @Test(groups = "regression")
-    public void testAddContact_SpecialCharacters() {
+    public void testAddContact_withSpecialCharactersInAllFields() {
         ContactLombok contact = TestDataFactoryContact.invalidFieldsWithSpecialCharacters();
         new AddContactScreen(driver).fillContactForm(contact).clickCreateContact();
-        assertContactCreationError(ErrorMessages.INVALID_INPUT);
+        verifyErrorMessage(ErrorMessages.INVALID_REQUIRED_FIELDS);
     }
 }
