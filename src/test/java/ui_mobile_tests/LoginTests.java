@@ -21,125 +21,156 @@ public class LoginTests extends AppiumConfig {
 
     @BeforeMethod(alwaysRun = true)
     public void goToAuthScreen(){
-        new SplashScreen(driver).goToLogin();
+        new SplashScreen(driver).goToAuthenticationScreen();
     }
 
     // Helper
-    public UserLombok userRegistration() {
-        UserLombok user = TestDataFactoryUser.validUser();
-        new LoginScreen(driver).registerUser(user);
+    private UserLombok registerAndLogout(UserLombok user) {
+        new AuthenticationScreen(driver).registerUser(user);
         new ContactListScreen(driver).logout();
         return user;
     }
 
-    // Positive test
+    private void login(String email, String password) {
+        new AuthenticationScreen(driver).login(email, password);
+    }
+
+    // Positive tests
     @Test(retryAnalyzer = utils.RetryAnalyzer.class, groups = {"smoke", "regression"})
-    public void testUserCanLoginAfterRegistration() {
-        UserLombok validUser = userRegistration();
-        new LoginScreen(driver).login(validUser.getUsername(), validUser.getPassword());
-        Assert.assertTrue(new ContactListScreen(driver).isContactListDisplayed(), "Login failed");
+    public void testLogin_afterSuccessfulRegistration() {
+        UserLombok user = registerAndLogout(TestDataFactoryUser.validUser());
+        login(user.getUsername(), user.getPassword());
+        Assert.assertTrue(new ContactListScreen(driver).isContactListDisplayed(),
+                "Login failed");
+    }
+
+    /**
+    Bug: A user registered with an email in uppercase,
+    but cannot log in using the same email in uppercase.
+    */
+    @Test(groups = "regression")
+    public void testLogin_withUpperCaseEmail() {
+        UserLombok user = TestDataFactoryUser.validUser();
+        String upperEmail = user.getUsername().toUpperCase();
+        registerAndLogout(new UserLombok(upperEmail, user.getPassword()));
+        login(upperEmail, user.getPassword());
+        Assert.assertTrue(new ContactListScreen(driver).isContactListDisplayed(),
+                "Login failed");
+    }
+
+    @Test(retryAnalyzer = utils.RetryAnalyzer.class, groups = "regression")
+    public void testLogin_withLowerCaseEmail_afterUpperCaseRegistration() {
+        UserLombok user = TestDataFactoryUser.validUser();
+        String upperEmail = user.getUsername().toUpperCase();
+        registerAndLogout(new UserLombok(upperEmail, user.getPassword()));
+        String lowerEmail = upperEmail.toLowerCase();
+        login(lowerEmail, user.getPassword());
+        Assert.assertTrue(new ContactListScreen(driver).isContactListDisplayed(),
+                "Login failed");
     }
 
     // Helper
-    private void assertLoginFailure(String expectedMsg) {
+    private void verifyErrorMessage(String expectedMsg) {
         ErrorScreen errorScreen = new ErrorScreen(driver);
         String actualMsg = errorScreen.getErrorMessage();
         logger.info("Actual error message: '{}'", actualMsg);
         logger.info("Expected to contain: '{}'", expectedMsg);
 
         Assert.assertTrue(actualMsg.contains(expectedMsg),
-                "Expected message to contain: " + expectedMsg + ", but got: " + actualMsg);
-        errorScreen.closeAlert();
+                "Expected error message to contain: " + expectedMsg +
+                        ", but got: '" + actualMsg + "'");
+        errorScreen.closeErrorMsg();
     }
-
 
     // Negative tests
-    @Test(retryAnalyzer = utils.RetryAnalyzer.class, groups = "regression")
-    public void testUserLogin_uppercaseEmail() {
-        UserLombok user = userRegistration();
-        String upperEmail = user.getUsername().toUpperCase();
-        new LoginScreen(driver).login(upperEmail, user.getPassword());
-        Assert.assertTrue(new ContactListScreen(driver).isContactListDisplayed(),
-                ErrorMessages.LOGIN_FAILED);
+    @Test(groups = "regression")
+    public void testLogin_withUnregisteredUser() {
+        UserLombok user = TestDataFactoryUser.validUser();
+        login(user.getUsername(), user.getPassword());
+        verifyErrorMessage(ErrorMessages.LOGIN_FAILED);
     }
 
     @Test(groups = "regression")
-    public void loginNegativeTest_unregisteredUser() {
-        UserLombok unregisteredUser = TestDataFactoryUser.validUser();
-        new LoginScreen(driver).login(unregisteredUser.getUsername(), unregisteredUser.getPassword());
-        assertLoginFailure(ErrorMessages.LOGIN_FAILED);
+    public void testLogin_withWrongPassword() {
+        UserLombok user = registerAndLogout(TestDataFactoryUser.validUser());
+        String wrongPassword = RandomUtils.generatePassword(8);
+        login(user.getUsername(), wrongPassword);
+        verifyErrorMessage(ErrorMessages.LOGIN_FAILED);
     }
 
     @Test(groups = "regression")
-    public void loginNegativeTest_wrongPassword() {
-        UserLombok user = userRegistration();
-        new LoginScreen(driver).login(user.getUsername(), RandomUtils.generatePassword(8));
-        assertLoginFailure(ErrorMessages.LOGIN_FAILED);
+    public void testLogin_withEmptyUsername() {
+        UserLombok user = registerAndLogout(TestDataFactoryUser.validUser());
+        login("", user.getPassword());
+        verifyErrorMessage(ErrorMessages.LOGIN_FAILED);
     }
 
     @Test(groups = "regression")
-    public void loginNegativeTest_emptyUsername() {
-        UserLombok user = userRegistration();
-        String userName = "";
-        new LoginScreen(driver).login(userName, user.getPassword());
-        assertLoginFailure(ErrorMessages.LOGIN_FAILED);
+    public void testLogin_withEmptyPassword() {
+        UserLombok user = registerAndLogout(TestDataFactoryUser.validUser());
+        login(user.getUsername(), "");
+        verifyErrorMessage(ErrorMessages.LOGIN_FAILED);
     }
 
     @Test(groups = "regression")
-    public void loginNegativeTest_emptyPassword() {
-        UserLombok user = userRegistration();
-        String password = "";
-        new LoginScreen(driver).login(user.getUsername(), password);
-        assertLoginFailure(ErrorMessages.LOGIN_FAILED);
+    public void testLogin_withInvalidEmail_NoAtSymbol() {
+        UserLombok user = registerAndLogout(TestDataFactoryUser.validUser());
+        String emailNoAt = user.getUsername().replace("@", "");
+        login(emailNoAt, user.getPassword());
+        verifyErrorMessage(ErrorMessages.LOGIN_FAILED);
     }
 
     @Test(groups = "regression")
-    public void loginNegativeTest_invalidUsernameFormat() {
-        UserLombok invalidUser = TestDataFactoryUser.invalidEmailNoAtSymbol();
-        new LoginScreen(driver).login(invalidUser.getUsername(), invalidUser.getPassword());
-        assertLoginFailure(ErrorMessages.LOGIN_FAILED);
+    public void testLogin_withInvalidEmail_NoDomain() {
+        UserLombok user = registerAndLogout(TestDataFactoryUser.validUser());
+        String emailNoDomain = user.getUsername().replaceAll("\\.\\w+$", "");
+        login(emailNoDomain, user.getPassword());
+        verifyErrorMessage(ErrorMessages.LOGIN_FAILED);
     }
 
     @Test(groups = "regression")
-    public void loginNegativeTest_invalidUsernameDomain() {
-        UserLombok invalidUser = TestDataFactoryUser.invalidEmailNoDomain();
-        new LoginScreen(driver).login(invalidUser.getUsername(), invalidUser.getPassword());
-        assertLoginFailure(ErrorMessages.LOGIN_FAILED);
+    public void testLogin_withEmailContainingSpace_first() {
+        UserLombok user = registerAndLogout(TestDataFactoryUser.validUser());
+        login(" " + user.getUsername(), user.getPassword());
+        verifyErrorMessage(ErrorMessages.LOGIN_FAILED);
     }
 
     @Test(groups = "regression")
-    public void loginNegativeTest_invalidUsername_withSpace() {
-        UserLombok user = userRegistration();
-        String space = " ";
-        new LoginScreen(driver).login(user.getUsername() + space, user.getPassword());
-        assertLoginFailure(ErrorMessages.LOGIN_FAILED);
+    public void testLogin_withEmailContainingSpace_last() {
+        UserLombok user = registerAndLogout(TestDataFactoryUser.validUser());
+        login(user.getUsername() + " ", user.getPassword());
+        verifyErrorMessage(ErrorMessages.LOGIN_FAILED);
     }
 
     @Test(groups = "regression")
-    public void loginNegativeTest_invalidPasswordShort() {
-        UserLombok invalidUser = TestDataFactoryUser.invalidPasswordTooShort();
-        new LoginScreen(driver).login(invalidUser.getUsername(), invalidUser.getPassword());
-        assertLoginFailure(ErrorMessages.LOGIN_FAILED);
+    public void testLogin_withShortPassword() {
+        UserLombok user = registerAndLogout(TestDataFactoryUser.validUser());
+        String shortPassword = RandomUtils.generatePassword(3);
+        login(user.getUsername(), shortPassword);
+        verifyErrorMessage(ErrorMessages.LOGIN_FAILED);
     }
 
     @Test(groups = "regression")
-    public void loginNegativeTest_invalidPasswordLong() {
-        UserLombok invalidUser = TestDataFactoryUser.invalidPasswordTooLong();
-        new LoginScreen(driver).login(invalidUser.getUsername(), invalidUser.getPassword());
-        assertLoginFailure(ErrorMessages.LOGIN_FAILED);
+    public void testLogin_withLongPassword() {
+        UserLombok user = registerAndLogout(TestDataFactoryUser.validUser());
+        String tooLongPassword = user.getPassword() + RandomUtils.generatePassword(10);
+        login(user.getUsername(), tooLongPassword);
+        verifyErrorMessage(ErrorMessages.LOGIN_FAILED);
     }
 
     @Test(groups = "regression")
-    public void loginNegativeTest_invalidPasswordNoDigit() {
-        UserLombok invalidUser = TestDataFactoryUser.invalidPasswordNoDigit();
-        new LoginScreen(driver).login(invalidUser.getUsername(), invalidUser.getPassword());
-        assertLoginFailure(ErrorMessages.LOGIN_FAILED);
+    public void testLogin_withPasswordNoDigit() {
+        UserLombok user = registerAndLogout(TestDataFactoryUser.validUser());
+        String passwordNoDigit = user.getPassword().replaceAll("\\d", "");
+        login(user.getUsername(), passwordNoDigit);
+        verifyErrorMessage(ErrorMessages.LOGIN_FAILED);
     }
 
     @Test(groups = "regression")
-    public void loginNegativeTest_invalidPasswordNoSymbol() {
-        UserLombok invalidUser = TestDataFactoryUser.invalidPasswordNoSymbol();
-        new LoginScreen(driver).login(invalidUser.getUsername(), invalidUser.getPassword());
-        assertLoginFailure(ErrorMessages.LOGIN_FAILED);
+    public void testLogin_withPasswordNoSymbol() {
+        UserLombok user = registerAndLogout(TestDataFactoryUser.validUser());
+        String passwordNoSymbol = user.getPassword().replaceAll("[^a-zA-Z0-9]", "");
+        login(user.getUsername(), passwordNoSymbol);
+        verifyErrorMessage(ErrorMessages.LOGIN_FAILED);
     }
 } 
