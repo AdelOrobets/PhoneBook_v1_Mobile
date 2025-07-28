@@ -30,5 +30,9 @@ dependencies {
 }
 
 test {
-    useTestNG()
+    useTestNG() {
+        if (System.getProperty("suiteXmlFile") != null) {
+            suites System.getProperty("suiteXmlFile")
+        }
+    }
 }

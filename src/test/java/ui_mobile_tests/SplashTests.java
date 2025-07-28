@@ -10,10 +10,10 @@ import utils.TestNGListener;
 @Listeners(TestNGListener.class)
 public class SplashTests extends AppiumConfig {
 
-    @Test
+    @Test(groups = {"smoke", "regression"})
     public void splashVersionTest() {
         String expectedVersion = "Version 1.0.0";
         boolean result = new SplashScreen(driver).validateVersionApp(expectedVersion);
-        Assert.assertTrue(result, "Version on splash screen is not as expected");
+        Assert.assertTrue(result, "Version on Splash Screen is not as expected");
     }
 }

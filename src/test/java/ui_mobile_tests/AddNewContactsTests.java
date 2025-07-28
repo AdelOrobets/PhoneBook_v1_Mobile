@@ -10,7 +10,7 @@ import org.testng.annotations.Test;
 import screens.AddContactScreen;
 import screens.ContactListScreen;
 import screens.ErrorScreen;
-import screens.LoginScreen;
+import screens.AuthenticationScreen;
 import utils.ErrorMessages;
 import utils.TestDataFactoryContact;
 import utils.TestDataFactoryUser;
@@ -22,7 +22,7 @@ public class AddNewContactsTests extends AppiumConfig {
     @BeforeMethod(alwaysRun = true)
     public void registrationUser() {
         UserLombok user = TestDataFactoryUser.validUser();
-        new LoginScreen(driver).registerUser(user);
+        new AuthenticationScreen(driver).registerUser(user);
         new ContactListScreen(driver).clickAddContact();
     }
 
@@ -43,7 +43,7 @@ public class AddNewContactsTests extends AppiumConfig {
         Assert.assertTrue(errorScreen.getErrorMessage().contains(expectedMsg),
                 "Expected error message to contain: " + expectedMsg +
                         " but got: " + errorScreen.getErrorMessage());
-        errorScreen.closeAlert();
+        errorScreen.closeErrorMsg();
     }
 
     // Negative tests

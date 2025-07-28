@@ -22,17 +22,17 @@ public class TestNGListener implements ITestListener {
 
     @Override
     public void onTestFailure(ITestResult result) {
-        logger.error("[TEST FAILED] {}", result.getMethod().getMethodName(), result.getThrowable());
+        logger.info("[TEST FAILED] {}", result.getMethod().getMethodName(), result.getThrowable());
     }
 
     @Override
     public void onTestSkipped(ITestResult result) {
-        logger.warn("[TEST SKIPPED] {}", result.getMethod().getMethodName());
+        logger.info("[TEST SKIPPED] {}", result.getMethod().getMethodName());
     }
 
     @Override
     public void onTestFailedButWithinSuccessPercentage(ITestResult result) {
-        logger.warn("[TEST FAILED WITHIN SUCCESS PERCENTAGE] {}", result.getMethod().getMethodName());
+        logger.info("[TEST FAILED WITHIN SUCCESS PERCENTAGE] {}", result.getMethod().getMethodName());
     }
 
     @Override

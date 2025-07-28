@@ -33,8 +33,8 @@ public class TestDataFactoryUser {
     }
 
     public static UserLombok invalidEmailWithSpace() {
-        return baseUser().username(RandomUtils.generateEmail(4) + " " + RandomUtils.
-                generateEmail(4)).build();
+        return baseUser().username(RandomUtils.generateEmail(5) + RandomUtils.
+                generateRandomString(1," ")).build();
     }
 
     public static UserLombok invalidPasswordTooShort() {

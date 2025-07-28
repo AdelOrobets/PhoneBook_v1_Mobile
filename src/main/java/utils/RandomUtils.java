@@ -109,7 +109,7 @@ public class RandomUtils {
                 "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz@$#^&*!");
     }
 
-    private static String generateRandomString(int length, String characters) {
+    public static String generateRandomString(int length, String characters) {
         SecureRandom random = new SecureRandom();
         StringBuilder sb = new StringBuilder(length);
         for (int i = 0; i < length; i++) {

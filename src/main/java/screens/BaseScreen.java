@@ -1,6 +1,7 @@
 package screens;
 
 import io.appium.java_client.AppiumDriver;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -41,5 +42,10 @@ public class BaseScreen {
         waitForVisibility(element, 20);
         element.clear();
         element.sendKeys(text);
+    }
+
+    public void waitUntilElementIsVisible(WebElement element) {
+        new WebDriverWait(driver, Duration.ofSeconds(20))
+                .until(ExpectedConditions.visibilityOf(element));
     }
 }

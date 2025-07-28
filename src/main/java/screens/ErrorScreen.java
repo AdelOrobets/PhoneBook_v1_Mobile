@@ -22,14 +22,12 @@ public class ErrorScreen extends BaseScreen {
 
 
     public String getErrorMessage() {
-        new WebDriverWait(driver, Duration.ofSeconds(5))
+        new WebDriverWait(driver, Duration.ofSeconds(30))
                 .until(ExpectedConditions.visibilityOf(errorText));
         return errorText.getText();
     }
 
-    public void closeAlert() {
-        if (btnOk.isDisplayed()) {
-            btnOk.click();
+    public void closeErrorMsg() {
+        clickWhenReady(btnOk);
         }
-    }
 }

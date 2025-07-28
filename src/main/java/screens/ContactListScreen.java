@@ -4,6 +4,8 @@ import io.appium.java_client.AppiumDriver;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+
 import java.util.List;
 
 public class ContactListScreen extends BaseScreen {
@@ -26,6 +28,7 @@ public class ContactListScreen extends BaseScreen {
 
 
     public boolean isContactListDisplayed() {
+        waitUntilElementIsVisible(btnAddContact);
         return isElementDisplayed(btnAddContact);
     }
 
@@ -45,8 +48,11 @@ public class ContactListScreen extends BaseScreen {
         return false;
     }
 
-    public void logout() {
-        btnMenu.click();
-        btnLogout.click();
+    public AuthenticationScreen logout() {
+        clickWhenReady(btnMenu);
+        clickWhenReady(btnLogout);
+        AuthenticationScreen authenticationScreen = new AuthenticationScreen(driver);
+        wait.until(ExpectedConditions.visibilityOf(authenticationScreen.inputEmail));
+        return authenticationScreen;
     }
 }

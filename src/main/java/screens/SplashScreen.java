@@ -18,11 +18,11 @@ public class SplashScreen extends BaseScreen {
     WebElement versionText;
 
     public boolean validateVersionApp(String expectedVersion) {
-        logger.info("Validating splash screen version text. Expected: '{}'", expectedVersion);
+        logger.info("SplashScreen version expected: '{}'", expectedVersion);
 
         try {
             String actualVersion = waitForVisibility(versionText, 10).getText();
-            logger.info("Actual version text: '{}'", actualVersion);
+            logger.info("Actual version: '{}'", actualVersion);
 
             boolean result = actualVersion.equals(expectedVersion);
             if (!result) {
@@ -36,11 +36,7 @@ public class SplashScreen extends BaseScreen {
         }
     }
 
-    public LoginScreen goToReg() {
-        return new LoginScreen(driver);
-    }
-
-    public LoginScreen goToLogin() {
-        return new LoginScreen(driver);
+    public AuthenticationScreen goToAuthenticationScreen() {
+        return new AuthenticationScreen(driver);
     }
 }
