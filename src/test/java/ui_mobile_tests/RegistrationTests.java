@@ -16,33 +16,40 @@ import utils.TestNGListener;
 @Listeners(TestNGListener.class)
 public class RegistrationTests extends AppiumConfig {
 
+    AuthenticationScreen authenticationScreen;
+    ContactListScreen contactListScreen;
+
     private static final Logger logger = LoggerFactory.getLogger(RegistrationTests.class);
 
     @BeforeMethod(alwaysRun = true)
     public void goToAuthScreen(){
-        new SplashScreen(driver).goToReg();
+        new SplashScreen(driver).goToAuthenticationScreen();
+    }
+
+    private void registerUser(UserLombok user) {
+        authenticationScreen = new AuthenticationScreen(driver);
+        authenticationScreen.registerUser(user);
+    }
+
+    private void verifyErrorMessage(String expectedMsg) {
+        ErrorScreen errorScreen = new ErrorScreen(driver);
+        String actualMsg = errorScreen.getErrorMessage();
+        logger.info("Actual error message: '{}'", actualMsg);
+        logger.info("Expected to contain: '{}'", expectedMsg);
+
+        Assert.assertTrue(actualMsg.contains(expectedMsg),
+                "Expected error message to contain: " + expectedMsg +
+                        ", but got: '" + actualMsg + "'");
+        errorScreen.closeErrorMsg();
     }
 
     // Positive test
     @Test(groups = {"smoke", "regression"})
     public void testSuccessfulRegistration() {
         UserLombok user = TestDataFactoryUser.validUser();
-        new LoginScreen(driver).registerUser(user);
+        registerUser(user);
         Assert.assertTrue(new ContactListScreen(driver).isContactListDisplayed(),
                 "Registration failed: Contact list screen not shown");
-    }
-
-    // Helper
-    private void assertRegistrationFailure(UserLombok user, String expectedMsg) {
-        new LoginScreen(driver).registerUser(user);
-        ErrorScreen errorScreen = new ErrorScreen(driver);
-        String actualMsg = errorScreen.getErrorMessage();
-        logger.info("Actual error message: '{}'", actualMsg);
-        logger.info("Expected to contain: '{}'", expectedMsg);
-
-        Assert.assertTrue(actualMsg.contains(expectedMsg), "Expected error message to contain: "
-                + expectedMsg + ", but got: '" + actualMsg);
-        errorScreen.closeAlert();
     }
 
     // Negative tests
@@ -50,63 +57,92 @@ public class RegistrationTests extends AppiumConfig {
     public void testNegative_UserAlreadyExist() {
         UserLombok user = TestDataFactoryUser.validUser();
         // First registration
-        new LoginScreen(driver).registerUser(user);
-        new ContactListScreen(driver).logout();
+        registerUser(user);
+        contactListScreen = new ContactListScreen(driver);
+        if (contactListScreen.isContactListDisplayed()) {
+            contactListScreen.logout();
+        }
         // Second registration
-        assertRegistrationFailure(user, ErrorMessages.USER_ALREADY_EXISTS);
+        registerUser(user);
+        verifyErrorMessage(ErrorMessages.USER_ALREADY_EXISTS);
     }
 
     @Test(groups = "regression")
     public void testNegative_emptyUsername() {
         UserLombok invalidUser = TestDataFactoryUser.userWithoutEmail();
-        assertRegistrationFailure(invalidUser, ErrorMessages.EMAIL_REQUIRED);
+        registerUser(invalidUser);
+       verifyErrorMessage(ErrorMessages.EMAIL_REQUIRED);
     }
 
+    /**
+    BUG: When registering with an empty password,
+    the user should remain on the registration screen
+    and the application should display an alert or error: "Password is required"
+    However, the alert does not appear and the application simply closes
+     */
     @Test(groups = "regression")
     public void testNegative_emptyPassword() {
-        UserLombok invalidUser = TestDataFactoryUser.userWithoutPassword();
-        assertRegistrationFailure(invalidUser, ErrorMessages.PASSWORD_REQUIRED);
+        UserLombok user = TestDataFactoryUser.userWithoutPassword();
+        registerUser(user);
+        verifyErrorMessage(ErrorMessages.PASSWORD_REQUIRED);
     }
 
     @Test(groups = "regression")
     public void testNegative_invalidUsernameFormat() {
         UserLombok invalidUser = TestDataFactoryUser.invalidEmailNoAtSymbol();
-        assertRegistrationFailure(invalidUser, ErrorMessages.INVALID_EMAIL);
+        registerUser(invalidUser);
+        verifyErrorMessage(ErrorMessages.INVALID_EMAIL);
     }
 
+    /**
+    BUG: The system successfully allows registration with an invalid email
+    that is missing a domain extension (e.g., .com)
+     */
     @Test(groups = "regression")
     public void testNegative_invalidUsernameDomain() {
         UserLombok invalidUser = TestDataFactoryUser.invalidEmailNoDomain();
-        assertRegistrationFailure(invalidUser, ErrorMessages.INVALID_EMAIL);
+        registerUser(invalidUser);
+        verifyErrorMessage(ErrorMessages.INVALID_EMAIL);
     }
 
     @Test(groups = "regression")
     public void testNegative_invalidUsername_withSpace() {
         UserLombok invalidUser = TestDataFactoryUser.invalidEmailWithSpace();
-        assertRegistrationFailure(invalidUser, ErrorMessages.INVALID_EMAIL);
+        registerUser(invalidUser);
+        verifyErrorMessage(ErrorMessages.INVALID_EMAIL);
     }
 
     @Test(groups = "regression")
     public void testNegative_invalidPasswordShort() {
         UserLombok invalidUser = TestDataFactoryUser.invalidPasswordTooShort();
-        assertRegistrationFailure(invalidUser, ErrorMessages.PASSWORD_TOO_SHORT);
+        registerUser(invalidUser);
+        verifyErrorMessage(ErrorMessages.PASSWORD_TOO_SHORT);
     }
 
+    /**
+     BUG: According to requirements,
+     password should be between 8 and 15 characters.
+     Expected: Registration should fail when password length > 15
+     Actual: Registration succeeds with password length > 15
+     */
     @Test(groups = "regression")
     public void testNegative_invalidPasswordLong() {
         UserLombok invalidUser = TestDataFactoryUser.invalidPasswordTooLong();
-        assertRegistrationFailure(invalidUser, ErrorMessages.PASSWORD_TOO_LONG);
+        registerUser(invalidUser);
+        verifyErrorMessage(ErrorMessages.PASSWORD_TOO_LONG);
     }
 
     @Test(groups = "regression")
     public void testNegative_invalidPasswordNoDigit() {
         UserLombok invalidUser = TestDataFactoryUser.invalidPasswordNoDigit();
-        assertRegistrationFailure(invalidUser, ErrorMessages.PASSWORD_NO_DIGIT);
+        registerUser(invalidUser);
+        verifyErrorMessage(ErrorMessages.PASSWORD_NO_DIGIT);
     }
 
     @Test(groups = "regression")
     public void testNegative_invalidPasswordNoSymbol() {
         UserLombok invalidUser = TestDataFactoryUser.invalidPasswordNoSymbol();
-        assertRegistrationFailure(invalidUser, ErrorMessages.PASSWORD_NO_SYMBOL);
+        registerUser(invalidUser);
+        verifyErrorMessage(ErrorMessages.PASSWORD_NO_SYMBOL);
     }
 }
