@@ -50,8 +50,18 @@ public class EditContactTests extends AppiumConfig {
 
     // Positive tests
     @Test(groups = {"smoke", "regression"})
-    public void testContactEditSuccessful() {
+    public void testContactEditSuccessful_allFields() {
         ContactLombok updatedContact = TestDataFactoryContact.validContact();
+        new EditContactScreen(driver).editContact(updatedContact);
+        String fullName = updatedContact.getName() + " " + updatedContact.getLastName();
+        boolean isPresent = new ContactListScreen(driver)
+                .isContactPresent(fullName, updatedContact.getPhone());
+        Assert.assertTrue(isPresent, "Contact not displayed");
+    }
+
+    @Test(groups = {"smoke", "regression"})
+    public void testContactEditSuccessful_onlyRequiredFields() {
+        ContactLombok updatedContact = TestDataFactoryContact.withOnlyRequiredFields();
         new EditContactScreen(driver).editContact(updatedContact);
         String fullName = updatedContact.getName() + " " + updatedContact.getLastName();
         boolean isPresent = new ContactListScreen(driver)

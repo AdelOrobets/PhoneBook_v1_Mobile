@@ -27,6 +27,17 @@ public class TestDataFactoryContact {
                 .description(RandomUtils.generateDescription());
     }
 
+    public static ContactLombok withOnlyRequiredFields(){
+        return ContactLombok.builder()
+                .name(RandomUtils.generateFirstNameFromList())
+                .lastName(RandomUtils.generateLastNameFromList())
+                .phone(RandomUtils.generatePhoneNumber())
+                .email("")
+                .address(RandomUtils.generateAddressList())
+                .description("")
+                .build();
+    }
+
     public static ContactLombok allFieldsEmpty() {
         return ContactLombok.builder()
                 .name("")

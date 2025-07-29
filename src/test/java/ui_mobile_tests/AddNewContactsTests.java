@@ -44,8 +44,18 @@ public class AddNewContactsTests extends AppiumConfig {
 
     // Positive tests
     @Test(groups = {"smoke", "regression"})
-    public void testSuccessful_addNewContact() {
+    public void testSuccessfulAddNewContact_AllFields() {
         ContactLombok contact = TestDataFactoryContact.validContact();
+        new AddContactScreen(driver).fillContactForm(contact).clickCreateContact();
+        String fullName = contact.getName() + " " + contact.getLastName();
+        boolean isPresent = new ContactListScreen(driver)
+                .isContactPresent(fullName, contact.getPhone());
+        Assert.assertTrue(isPresent, "Contact was not added or not displayed");
+    }
+
+    @Test(groups = "regression")
+    public void testSuccessfulAddContact_onlyRequiredFields() {
+        ContactLombok contact = TestDataFactoryContact.withOnlyRequiredFields();
         new AddContactScreen(driver).fillContactForm(contact).clickCreateContact();
         String fullName = contact.getName() + " " + contact.getLastName();
         boolean isPresent = new ContactListScreen(driver)
@@ -94,13 +104,6 @@ public class AddNewContactsTests extends AppiumConfig {
         ContactLombok contact = TestDataFactoryContact.invalidFieldWithoutPhone();
         new AddContactScreen(driver).fillContactForm(contact).clickCreateContact();
         verifyErrorMessage(ErrorMessages.PHONE_REQUIRED);
-    }
-
-    @Test(groups = "regression")
-    public void testAddContact_withEmptyEmail() {
-        ContactLombok contact = TestDataFactoryContact.invalidFieldWithoutEmail();
-        new AddContactScreen(driver).fillContactForm(contact).clickCreateContact();
-        verifyErrorMessage(ErrorMessages.EMAIL_REQUIRED);
     }
 
     @Test(groups = "regression")

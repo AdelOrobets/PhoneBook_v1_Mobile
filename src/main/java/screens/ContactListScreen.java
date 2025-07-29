@@ -62,7 +62,7 @@ public class ContactListScreen extends BaseScreen {
                                     (By.id("com.sheygam.contactapp:id/rowName")).getText();
                             String contactPhone = contact.findElement
                                     (By.id("com.sheygam.contactapp:id/rowPhone")).getText();
-                            logger.info("Update Contact Name: " + contactName + ", Phone: " + contactPhone);
+                            logger.info("New Contact Name: " + contactName + ", Phone: " + contactPhone);
 
                             if (contactName.equals(name) && contactPhone.equals(phone)) {
                                 return true;
