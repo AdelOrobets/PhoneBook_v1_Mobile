@@ -28,6 +28,4 @@ public class ErrorMessages {
             "1 lowercase letter, and 1 number; Can contain special characters";
 
     public static final String LOGIN_FAILED = "Login or Password incorrect";
-
-
 }

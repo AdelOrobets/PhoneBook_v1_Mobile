@@ -1,11 +1,14 @@
 package screens;
 
+import dto.ContactLombok;
+import dto.UserLombok;
 import io.appium.java_client.AppiumDriver;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import utils.TestDataFactoryContact;
+import utils.TestDataFactoryUser;
 
 import java.time.Duration;
 
@@ -24,8 +27,14 @@ public class BaseScreen {
                 .until(ExpectedConditions.visibilityOf(element));
     }
 
+    protected void enterText(WebElement element, String text) {
+        waitForVisibility(element, 20);
+        element.clear();
+        element.sendKeys(text);
+    }
+
     protected void clickWhenReady(WebElement element) {
-        new WebDriverWait(driver, Duration.ofSeconds(20))
+        new WebDriverWait(driver, Duration.ofSeconds(30))
                 .until(ExpectedConditions.elementToBeClickable(element)).click();
     }
 
@@ -38,14 +47,19 @@ public class BaseScreen {
         }
     }
 
-    protected void enterText(WebElement element, String text) {
-        waitForVisibility(element, 20);
-        element.clear();
-        element.sendKeys(text);
-    }
-
     public void waitUntilElementIsVisible(WebElement element) {
         new WebDriverWait(driver, Duration.ofSeconds(20))
                 .until(ExpectedConditions.visibilityOf(element));
+    }
+
+    public void registrationValidUser() {
+        UserLombok user = TestDataFactoryUser.validUser();
+        new AuthenticationScreen(driver).registerUser(user);
+    }
+
+    public void addNewValidContact() {
+        ContactLombok contact = TestDataFactoryContact.validContact();
+        new ContactListScreen(driver).clickAddContact();
+        new AddContactScreen(driver).fillContactForm(contact).clickCreateContact();
     }
 }

@@ -48,14 +48,4 @@ public class AuthenticationScreen extends BaseScreen {
     public void registerUser(UserLombok user) {
         register(user.getUsername(), user.getPassword());
     }
-
-    public boolean isInputEmailDisplayed() {
-        try {
-            return inputEmail.isDisplayed();
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-
 }

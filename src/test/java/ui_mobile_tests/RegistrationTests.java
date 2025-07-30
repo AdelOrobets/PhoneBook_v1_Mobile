@@ -2,8 +2,6 @@ package ui_mobile_tests;
 
 import config.AppiumConfig;
 import dto.UserLombok;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
@@ -19,8 +17,6 @@ public class RegistrationTests extends AppiumConfig {
     AuthenticationScreen authenticationScreen;
     ContactListScreen contactListScreen;
 
-    private static final Logger logger = LoggerFactory.getLogger(RegistrationTests.class);
-
     @BeforeMethod(alwaysRun = true)
     public void goToAuthScreen(){
         new SplashScreen(driver).goToAuthenticationScreen();
@@ -29,18 +25,6 @@ public class RegistrationTests extends AppiumConfig {
     private void registerUser(UserLombok user) {
         authenticationScreen = new AuthenticationScreen(driver);
         authenticationScreen.registerUser(user);
-    }
-
-    private void verifyErrorMessage(String expectedMsg) {
-        ErrorScreen errorScreen = new ErrorScreen(driver);
-        String actualMsg = errorScreen.getErrorMessage();
-        logger.info("Actual error message: '{}'", actualMsg);
-        logger.info("Expected to contain: '{}'", expectedMsg);
-
-        Assert.assertTrue(actualMsg.contains(expectedMsg),
-                "Expected error message to contain: " + expectedMsg +
-                        ", but got: '" + actualMsg + "'");
-        errorScreen.closeErrorMsg();
     }
 
     // Positive test
@@ -64,14 +48,14 @@ public class RegistrationTests extends AppiumConfig {
         }
         // Second registration
         registerUser(user);
-        verifyErrorMessage(ErrorMessages.USER_ALREADY_EXISTS);
+        new ErrorScreen(driver).verifyErrorMessage(ErrorMessages.USER_ALREADY_EXISTS);
     }
 
     @Test(groups = "regression")
     public void testNegative_emptyUsername() {
         UserLombok invalidUser = TestDataFactoryUser.userWithoutEmail();
         registerUser(invalidUser);
-       verifyErrorMessage(ErrorMessages.EMAIL_REQUIRED);
+        new ErrorScreen(driver).verifyErrorMessage(ErrorMessages.EMAIL_REQUIRED);
     }
 
     /**
@@ -84,14 +68,14 @@ public class RegistrationTests extends AppiumConfig {
     public void testNegative_emptyPassword() {
         UserLombok user = TestDataFactoryUser.userWithoutPassword();
         registerUser(user);
-        verifyErrorMessage(ErrorMessages.PASSWORD_REQUIRED);
+        new ErrorScreen(driver).verifyErrorMessage(ErrorMessages.PASSWORD_REQUIRED);
     }
 
     @Test(groups = "regression")
     public void testNegative_invalidUsernameFormat() {
         UserLombok invalidUser = TestDataFactoryUser.invalidEmailNoAtSymbol();
         registerUser(invalidUser);
-        verifyErrorMessage(ErrorMessages.INVALID_EMAIL);
+        new ErrorScreen(driver).verifyErrorMessage(ErrorMessages.INVALID_EMAIL);
     }
 
     /**
@@ -102,21 +86,21 @@ public class RegistrationTests extends AppiumConfig {
     public void testNegative_invalidUsernameDomain() {
         UserLombok invalidUser = TestDataFactoryUser.invalidEmailNoDomain();
         registerUser(invalidUser);
-        verifyErrorMessage(ErrorMessages.INVALID_EMAIL);
+        new ErrorScreen(driver).verifyErrorMessage(ErrorMessages.INVALID_EMAIL);
     }
 
     @Test(groups = "regression")
     public void testNegative_invalidUsername_withSpace() {
         UserLombok invalidUser = TestDataFactoryUser.invalidEmailWithSpace();
         registerUser(invalidUser);
-        verifyErrorMessage(ErrorMessages.INVALID_EMAIL);
+        new ErrorScreen(driver).verifyErrorMessage(ErrorMessages.INVALID_EMAIL);
     }
 
     @Test(groups = "regression")
     public void testNegative_invalidPasswordShort() {
         UserLombok invalidUser = TestDataFactoryUser.invalidPasswordTooShort();
         registerUser(invalidUser);
-        verifyErrorMessage(ErrorMessages.PASSWORD_TOO_SHORT);
+        new ErrorScreen(driver).verifyErrorMessage(ErrorMessages.PASSWORD_TOO_SHORT);
     }
 
     /**
@@ -129,20 +113,20 @@ public class RegistrationTests extends AppiumConfig {
     public void testNegative_invalidPasswordLong() {
         UserLombok invalidUser = TestDataFactoryUser.invalidPasswordTooLong();
         registerUser(invalidUser);
-        verifyErrorMessage(ErrorMessages.PASSWORD_TOO_LONG);
+        new ErrorScreen(driver).verifyErrorMessage(ErrorMessages.PASSWORD_TOO_LONG);
     }
 
     @Test(groups = "regression")
     public void testNegative_invalidPasswordNoDigit() {
         UserLombok invalidUser = TestDataFactoryUser.invalidPasswordNoDigit();
         registerUser(invalidUser);
-        verifyErrorMessage(ErrorMessages.PASSWORD_NO_DIGIT);
+        new ErrorScreen(driver).verifyErrorMessage(ErrorMessages.PASSWORD_NO_DIGIT);
     }
 
     @Test(groups = "regression")
     public void testNegative_invalidPasswordNoSymbol() {
         UserLombok invalidUser = TestDataFactoryUser.invalidPasswordNoSymbol();
         registerUser(invalidUser);
-        verifyErrorMessage(ErrorMessages.PASSWORD_NO_SYMBOL);
+        new ErrorScreen(driver).verifyErrorMessage(ErrorMessages.PASSWORD_NO_SYMBOL);
     }
 }

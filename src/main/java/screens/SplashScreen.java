@@ -36,7 +36,7 @@ public class SplashScreen extends BaseScreen {
         }
     }
 
-    public AuthenticationScreen goToAuthenticationScreen() {
-        return new AuthenticationScreen(driver);
+    public void goToAuthenticationScreen() {
+        new AuthenticationScreen(driver);
     }
 }

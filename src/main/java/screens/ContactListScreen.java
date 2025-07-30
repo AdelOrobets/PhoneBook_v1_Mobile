@@ -1,5 +1,6 @@
 package screens;
 
+import dto.ContactDto;
 import io.appium.java_client.AppiumDriver;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
@@ -8,11 +9,11 @@ import org.openqa.selenium.interactions.PointerInput;
 import org.openqa.selenium.interactions.Sequence;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ContactListScreen extends BaseScreen {
@@ -26,6 +27,12 @@ public class ContactListScreen extends BaseScreen {
     @FindBy(id = "com.sheygam.contactapp:id/add_contact_btn")
     WebElement btnAddContact;
 
+    @FindBy(id = "android:id/button1")
+    WebElement btnRemoveYes;
+
+    @FindBy(id = "android:id/button2")
+    WebElement btnCancel;
+
     @FindBy(xpath = "//android.widget.ImageView[@content-desc='More options']")
     WebElement btnMenu;
 
@@ -33,12 +40,12 @@ public class ContactListScreen extends BaseScreen {
     WebElement btnLogout;
 
     @FindBy(id = "com.sheygam.contactapp:id/rowContainer")
-    List<WebElement> contacts;
+    List<WebElement> contactsList;
 
-    private static final By CONTACTS_LOCATOR = By.id("com.sheygam.contactapp:id/rowContainer");
+    private static final By CONTACTS_LIST_LOCATOR = By.id("com.sheygam.contactapp:id/rowContainer");
 
     public List<WebElement> getContacts() {
-        return driver.findElements(CONTACTS_LOCATOR);
+        return driver.findElements(CONTACTS_LIST_LOCATOR);
     }
 
     public boolean isContactListScreenDisplayed() {
@@ -47,29 +54,36 @@ public class ContactListScreen extends BaseScreen {
     }
 
     public void clickAddContact() {
-        new WebDriverWait(driver, Duration.ofSeconds(30))
-                .until(ExpectedConditions.elementToBeClickable(btnAddContact));
-        btnAddContact.click();
+        clickWhenReady(btnAddContact);
+    }
+
+    public void clickDeleteContact() {
+        clickWhenReady(btnRemoveYes);
+    }
+
+    public void clickDeleteCancel() {
+        clickWhenReady(btnCancel);
     }
 
     public boolean isContactPresent(String name, String phone) {
         try {
-            wait.withTimeout(Duration.ofSeconds(10))
+            wait.withTimeout(Duration.ofSeconds(30))
                     .until(driver -> {
                         List<WebElement> contacts = getContacts();
                         for (WebElement contact : contacts) {
-                            String contactName = contact.findElement
+                            String contactFullName = contact.findElement
                                     (By.id("com.sheygam.contactapp:id/rowName")).getText();
                             String contactPhone = contact.findElement
                                     (By.id("com.sheygam.contactapp:id/rowPhone")).getText();
-                            logger.info("New Contact Name: " + contactName + ", Phone: " + contactPhone);
+                            logger.info("New Contact Name: {}, Phone: {}", contactFullName, contactPhone);
 
-                            if (contactName.equals(name) && contactPhone.equals(phone)) {
+                            if (contactFullName.equals(name) && contactPhone.equals(phone)) {
                                 return true;
                             }
                         }
                         return false;
                     });
+
         } catch (TimeoutException e) {
             logger.error("Contact with name '{}' and phone '{}' not visible", name, phone);
             return false;
@@ -77,24 +91,40 @@ public class ContactListScreen extends BaseScreen {
         return true;
     }
 
-    public AuthenticationScreen logout() {
-        clickWhenReady(btnMenu);
-        clickWhenReady(btnLogout);
-        AuthenticationScreen authenticationScreen = new AuthenticationScreen(driver);
-        wait.until(ExpectedConditions.visibilityOf(authenticationScreen.inputEmail));
-        return authenticationScreen;
+    public List<ContactDto> getContactDtoList() {
+        List<ContactDto> contactList = new ArrayList<>();
+
+        try {
+            wait.withTimeout(Duration.ofSeconds(30))
+                    .until(driver -> !getContacts().isEmpty());
+        } catch (TimeoutException e) {
+            logger.error("Contacts not visible");
+            return contactList;
+        }
+
+        List<WebElement> contacts = getContacts();
+        for (WebElement contact : contacts) {
+            String fullName = contact.findElement(By.id("com.sheygam.contactapp:id/rowName")).getText().trim();
+            String phone = contact.findElement(By.id("com.sheygam.contactapp:id/rowPhone")).getText().trim();
+
+            contactList.add(ContactDto.builder()
+                    .fullName(fullName)
+                    .phone(phone)
+                    .build());
+        }
+        return contactList;
     }
 
-    public ContactListScreen swipeToLeftForEditFirstContact() {
+    public void swipeToLeftForEditFirstContact() {
         try {
-            wait.until(ExpectedConditions.visibilityOfAllElements(contacts));
+            wait.until(ExpectedConditions.visibilityOfAllElements(contactsList));
         } catch (TimeoutException e) {
-            logger.error("Contacts not visible after timeout");
-            return this;
+            logger.error("Contacts not visible for edit");
+            return;
         }
-        if (contacts.isEmpty()) {
-            logger.warn("No contacts to swipe");
-            return this;
+        if (contactsList.isEmpty()) {
+            logger.info("No contacts to swipe for edit");
+            return;
         }
         WebElement contact = getContacts().get(0);
         int contactStartX = contact.getLocation().getX();
@@ -103,7 +133,32 @@ public class ContactListScreen extends BaseScreen {
         int endX = contactStartX + 20;
         int y = contact.getLocation().getY() + contact.getSize().getHeight() / 2;
 
-        logger.info("Swiping from (" + startX + "," + y + ") to (" + endX + "," + y + ")");
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        Sequence swipe = new Sequence(finger, 1);
+        swipe.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, y));
+        swipe.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+        swipe.addAction(finger.createPointerMove(Duration.ofMillis(500), PointerInput.Origin.viewport(), endX, y));
+        swipe.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+        driver.perform(List.of(swipe));
+    }
+
+    public void swipeToRightForDeleteFirstContact() {
+        try {
+            wait.until(ExpectedConditions.visibilityOfAllElements(contactsList));
+        } catch (TimeoutException e) {
+            logger.error("Contacts not visible for delete");
+            return;
+        }
+        if (contactsList.isEmpty()) {
+            logger.info("No contacts to swipe for delete");
+            return;
+        }
+        WebElement contact = getContacts().get(0);
+        int contactStartX = contact.getLocation().getX();
+        int contactWidth = contact.getSize().getWidth();
+        int startX = contactStartX + 20;
+        int endX = contactStartX + contactWidth - 20;
+        int y = contact.getLocation().getY() + contact.getSize().getHeight() / 2;
 
         PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
         Sequence swipe = new Sequence(finger, 1);
@@ -112,6 +167,12 @@ public class ContactListScreen extends BaseScreen {
         swipe.addAction(finger.createPointerMove(Duration.ofMillis(500), PointerInput.Origin.viewport(), endX, y));
         swipe.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
         driver.perform(List.of(swipe));
-        return this;
+    }
+
+    public void logout() {
+        clickWhenReady(btnMenu);
+        clickWhenReady(btnLogout);
+        AuthenticationScreen authenticationScreen = new AuthenticationScreen(driver);
+        wait.until(ExpectedConditions.visibilityOf(authenticationScreen.inputEmail));
     }
 }
