@@ -2,6 +2,10 @@ package ui_mobile_tests;
 
 import config.AppiumConfig;
 import dto.ContactDto;
+import dto.ContactLombok;
+import dto.UserLombok;
+import io.qameta.allure.AllureId;
+import io.qameta.allure.Story;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
@@ -9,6 +13,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import screens.*;
+import utils.TestDataFactoryContact;
+import utils.TestDataFactoryUser;
 import utils.TestNGListener;
 
 import java.util.List;
@@ -20,16 +26,25 @@ public class DeleteContactsTests extends AppiumConfig {
 
     @BeforeMethod(alwaysRun = true)
     public void precondition() {
-        new SplashScreen(driver).goToAuthenticationScreen();
-        new BaseScreen(driver).registrationValidUser();
-        new BaseScreen(driver).addNewValidContact();
-        new BaseScreen(driver).addNewValidContact();
+        UserLombok user = TestDataFactoryUser.validUser();
+        new AuthenticationScreen(getDriver()).registerUser(user);
+        addNewValidContact();
+        addNewValidContact();
+    }
+
+    public void addNewValidContact() {
+        ContactLombok contact = TestDataFactoryContact.validContact();
+        new ContactListScreen(getDriver()).clickAddContact();
+        new AddContactScreen(getDriver()).fillContactForm(contact);
+        new AddContactScreen(getDriver()).clickCreateContact();
     }
 
     // Positive tests
-    @Test(groups = {"smoke", "regression"})
+    @AllureId("DC_001")
+    @Story("Contact management")
+    @Test(groups = {"smoke", "regression", "all_way"})
     public void testSuccessful_ContactDelete() {
-        ContactListScreen contactListScreen = new ContactListScreen(driver);
+        ContactListScreen contactListScreen = new ContactListScreen(getDriver());
         List<ContactDto> contactsBefore = contactListScreen.getContactDtoList();
         logger.info("ContactsList before delete:\n {}", contactsBefore);
         ContactDto contactToDelete = contactsBefore.get(0);
@@ -38,15 +53,17 @@ public class DeleteContactsTests extends AppiumConfig {
         contactListScreen.swipeToRightForDeleteFirstContact();
         contactListScreen.clickDeleteContact();
 
-        List<ContactDto> contactsAfter = new ContactListScreen(driver).getContactDtoList();
+        List<ContactDto> contactsAfter = new ContactListScreen(getDriver()).getContactDtoList();
         logger.info("ContactsList after delete:\n {}", contactsAfter);
         Assert.assertFalse(contactsAfter.contains(contactToDelete),
                 "Contact was not deleted: " + contactToDelete);
     }
 
-    @Test(groups = {"regression"})
+    @AllureId("DC_002")
+    @Story("Contact management")
+    @Test(groups = {"smoke", "regression", "all_way"})
     public void testContactNotDeleted_ifClickCancel_afterSwipe() {
-        ContactListScreen contactListScreen = new ContactListScreen(driver);
+        ContactListScreen contactListScreen = new ContactListScreen(getDriver());
         List<ContactDto> contactsBefore = contactListScreen.getContactDtoList();
         logger.info("ContactsList before:\n {}", contactsBefore);
         ContactDto contactToKeep = contactsBefore.get(0);
@@ -55,7 +72,7 @@ public class DeleteContactsTests extends AppiumConfig {
         contactListScreen.swipeToRightForDeleteFirstContact();
         contactListScreen.clickDeleteCancel();
 
-        List<ContactDto> contactsAfter = new ContactListScreen(driver).getContactDtoList();
+        List<ContactDto> contactsAfter = new ContactListScreen(getDriver()).getContactDtoList();
         Assert.assertTrue(contactsAfter.contains(contactToKeep),
                 "Contact was deleted: " + contactToKeep);
     }

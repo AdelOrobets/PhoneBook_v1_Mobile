@@ -1,8 +1,9 @@
+# Smoke
 ./gradlew smoke_android
+
+# Regression
 ./gradlew regression_android
 
-./gradlew smoke_android \
-  -DdeviceName=Pixel_6 \
-  -DplatformVersion=13.0 \
-  -Dudid=emulator-5556
-
+# report
+./gradlew allureServe
+allure generate

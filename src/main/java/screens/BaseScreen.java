@@ -1,24 +1,24 @@
 package screens;
 
-import dto.ContactLombok;
-import dto.UserLombok;
 import io.appium.java_client.AppiumDriver;
+import io.qameta.allure.testng.AllureTestNg;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import utils.TestDataFactoryContact;
-import utils.TestDataFactoryUser;
+import org.testng.annotations.Listeners;
+import utils.TestNGListener;
 
 import java.time.Duration;
 
+@Listeners({AllureTestNg.class, TestNGListener.class})
 public class BaseScreen {
     protected AppiumDriver driver;
     protected WebDriverWait wait;
 
     public BaseScreen(AppiumDriver driver) {
         this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(30));
         PageFactory.initElements(driver, this);
     }
 
@@ -50,16 +50,5 @@ public class BaseScreen {
     public void waitUntilElementIsVisible(WebElement element) {
         new WebDriverWait(driver, Duration.ofSeconds(20))
                 .until(ExpectedConditions.visibilityOf(element));
-    }
-
-    public void registrationValidUser() {
-        UserLombok user = TestDataFactoryUser.validUser();
-        new AuthenticationScreen(driver).registerUser(user);
-    }
-
-    public void addNewValidContact() {
-        ContactLombok contact = TestDataFactoryContact.validContact();
-        new ContactListScreen(driver).clickAddContact();
-        new AddContactScreen(driver).fillContactForm(contact).clickCreateContact();
     }
 }

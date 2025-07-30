@@ -20,9 +20,7 @@ public class ContactListScreen extends BaseScreen {
 
     public static final Logger logger = LoggerFactory.getLogger(ContactListScreen.class);
 
-    public ContactListScreen(AppiumDriver driver) {
-        super(driver);
-    }
+    private static final By CONTACTS_LIST_LOCATOR = By.id("com.sheygam.contactapp:id/rowContainer");
 
     @FindBy(id = "com.sheygam.contactapp:id/add_contact_btn")
     WebElement btnAddContact;
@@ -42,7 +40,9 @@ public class ContactListScreen extends BaseScreen {
     @FindBy(id = "com.sheygam.contactapp:id/rowContainer")
     List<WebElement> contactsList;
 
-    private static final By CONTACTS_LIST_LOCATOR = By.id("com.sheygam.contactapp:id/rowContainer");
+    public ContactListScreen(AppiumDriver driver) {
+        super(driver);
+    }
 
     public List<WebElement> getContacts() {
         return driver.findElements(CONTACTS_LIST_LOCATOR);
@@ -120,11 +120,9 @@ public class ContactListScreen extends BaseScreen {
             wait.until(ExpectedConditions.visibilityOfAllElements(contactsList));
         } catch (TimeoutException e) {
             logger.error("Contacts not visible for edit");
-            return;
         }
         if (contactsList.isEmpty()) {
             logger.info("No contacts to swipe for edit");
-            return;
         }
         WebElement contact = getContacts().get(0);
         int contactStartX = contact.getLocation().getX();
@@ -147,11 +145,9 @@ public class ContactListScreen extends BaseScreen {
             wait.until(ExpectedConditions.visibilityOfAllElements(contactsList));
         } catch (TimeoutException e) {
             logger.error("Contacts not visible for delete");
-            return;
         }
         if (contactsList.isEmpty()) {
             logger.info("No contacts to swipe for delete");
-            return;
         }
         WebElement contact = getContacts().get(0);
         int contactStartX = contact.getLocation().getX();

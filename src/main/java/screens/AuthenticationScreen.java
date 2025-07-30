@@ -9,11 +9,11 @@ import org.slf4j.LoggerFactory;
 
 public class AuthenticationScreen extends BaseScreen {
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthenticationScreen.class);
-
     public AuthenticationScreen(AppiumDriver driver) {
         super(driver);
     }
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthenticationScreen.class);
 
     @FindBy(xpath = "//*[@resource-id='com.sheygam.contactapp:id/inputEmail']")
     WebElement inputEmail;

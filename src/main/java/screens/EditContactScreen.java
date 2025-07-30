@@ -9,11 +9,11 @@ import org.slf4j.LoggerFactory;
 
 public class EditContactScreen extends BaseScreen {
 
-    public static final Logger logger = LoggerFactory.getLogger(EditContactScreen.class);
-
     public EditContactScreen(AppiumDriver driver) {
         super(driver);
     }
+
+    public static final Logger logger = LoggerFactory.getLogger(EditContactScreen.class);
 
     @FindBy(id = "com.sheygam.contactapp:id/inputName")
     WebElement inputName;
@@ -54,4 +54,3 @@ public class EditContactScreen extends BaseScreen {
         new ContactListScreen(driver);
     }
 }
-

@@ -13,11 +13,11 @@ import java.time.Duration;
 
 public class ErrorScreen extends BaseScreen {
 
-    public static final Logger logger = LoggerFactory.getLogger(ErrorScreen.class);
-
     public ErrorScreen(AppiumDriver driver) {
         super(driver);
     }
+
+    public static final Logger logger = LoggerFactory.getLogger(ErrorScreen.class);
 
     @FindBy(id = "android:id/message")
     WebElement errorText;

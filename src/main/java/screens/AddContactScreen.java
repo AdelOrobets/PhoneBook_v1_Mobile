@@ -11,7 +11,7 @@ import java.time.Duration;
 
 public class AddContactScreen extends BaseScreen {
 
-    public AddContactScreen(AppiumDriver driver) {
+    public AddContactScreen(AppiumDriver driver){
         super(driver);
     }
 

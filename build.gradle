@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'io.qameta.allure' version '2.12.0'
 }
 
 group = 'org.example'
@@ -9,30 +10,91 @@ repositories {
     mavenCentral()
 }
 
+ext {
+    allureVersion = "2.24.0"
+    aspectJVersion = "1.9.20.1"
+    seleniumVersion = "4.34.0"
+    testngVersion = "7.11.0"
+    appiumVersion = "9.5.0"
+    lombokVersion = "1.18.28"
+    slf4jVersion = "2.0.9"
+    logbackVersion = "1.5.18"
+
+    smokeAndroidSuite = 'src/test/resources/suites/smoke_android.xml'
+    regressionAndroidSuite = 'src/test/resources/suites/regression_android.xml'
+    allWaySuite = 'src/test/resources/suites/all_way.xml'
+}
+
+// Define configuration for AspectJ agent
+configurations {
+    agent {
+        canBeResolved = true
+        canBeConsumed = true
+    }
+}
+
 dependencies {
     // Appium + Selenium + TestNG
-    implementation 'org.seleniumhq.selenium:selenium-java:4.8.1'
-    implementation 'org.testng:testng:7.11.0'
-    implementation 'io.appium:java-client:8.3.0'
+    implementation "org.seleniumhq.selenium:selenium-java:$seleniumVersion"
+    implementation "org.testng:testng:$testngVersion"
+    implementation "io.appium:java-client:$appiumVersion"
 
     // Lombok
-    compileOnly 'org.projectlombok:lombok:1.18.28'
-    annotationProcessor 'org.projectlombok:lombok:1.18.28'
-    testCompileOnly 'org.projectlombok:lombok:1.18.28'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.28'
+    compileOnly "org.projectlombok:lombok:$lombokVersion"
+    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+    testCompileOnly "org.projectlombok:lombok:$lombokVersion"
+    testAnnotationProcessor "org.projectlombok:lombok:$lombokVersion"
 
     // Logging
-    implementation 'org.slf4j:slf4j-api:2.0.9'
-    implementation 'ch.qos.logback:logback-classic:1.5.18'
+    implementation "org.slf4j:slf4j-api:$slf4jVersion"
+    implementation "ch.qos.logback:logback-classic:$logbackVersion"
 
     // Allure
-    testImplementation 'io.qameta.allure:allure-testng:2.24.0'
+    testImplementation platform("io.qameta.allure:allure-bom:$allureVersion")
+    testImplementation "io.qameta.allure:allure-testng"
+
+    // AspectJ Weaver
+    agent "org.aspectj:aspectjweaver:$aspectJVersion"
 }
 
 test {
-    useTestNG() {
-        if (System.getProperty("suiteXmlFile") != null) {
-            suites System.getProperty("suiteXmlFile")
-        }
+    useTestNG()
+    jvmArgs = [ "-javaagent:${configurations.agent.singleFile}" ]
+}
+
+// smoke_android task
+tasks.register('smoke_android', Test) {
+    useTestNG {
+        suites smokeAndroidSuite
     }
+
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    outputs.upToDateWhen { false }
+    finalizedBy 'allureReport'
+}
+
+
+// regression_android task
+tasks.register('regression_android', Test) {
+    useTestNG {
+        suites regressionAndroidSuite
+    }
+
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    outputs.upToDateWhen { false }
+    finalizedBy 'allureReport'
+}
+
+// all the way Reg-del task
+tasks.register('all_way', Test) {
+    useTestNG {
+        suites allWaySuite
+    }
+
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    outputs.upToDateWhen { false }
+    finalizedBy 'allureReport'
 }

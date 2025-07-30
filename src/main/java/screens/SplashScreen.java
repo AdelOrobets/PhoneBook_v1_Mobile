@@ -8,11 +8,11 @@ import org.slf4j.LoggerFactory;
 
 public class SplashScreen extends BaseScreen {
 
-    private static final Logger logger = LoggerFactory.getLogger(SplashScreen.class);
-
     public SplashScreen(AppiumDriver driver) {
         super(driver);
     }
+
+    private static final Logger logger = LoggerFactory.getLogger(SplashScreen.class);
 
     @FindBy(id = "com.sheygam.contactapp:id/version_text")
     WebElement versionText;
@@ -34,9 +34,5 @@ public class SplashScreen extends BaseScreen {
             logger.error("Failed to validate version text due to: {}", e.getMessage());
             return false;
         }
-    }
-
-    public void goToAuthenticationScreen() {
-        new AuthenticationScreen(driver);
     }
 }

@@ -1,6 +1,17 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 <suite name="UI Mobile Smoke Suite" verbose="1">
+    <listeners>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+    </listeners>
+
     <test name="smoke_android">
+        <parameter name="platformName" value="Android"/>
+        <parameter name="deviceName" value="Pixel_5"/>
+        <parameter name="platformVersion" value="8.0"/>
+        <parameter name="appPackage" value="com.sheygam.contactapp"/>
+        <parameter name="appActivity" value=".SplashActivity"/>
+        <parameter name="appiumServerURL" value="http://localhost:4723"/>
+
         <groups>
             <run>
                 <include name="smoke"/>
